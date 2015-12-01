@@ -1,0 +1,8 @@
+{
+	"site" : {
+		"title" : "test"
+	},
+	"origin" : {
+		"max_route_attempts" : "3"
+	}
+}
