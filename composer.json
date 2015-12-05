@@ -1,5 +1,6 @@
 {
 	"name" : "book-of-origin/ori",
+	"license": "MIT",
 	"repositories": [{
 			"type": "vcs",
 			"url": "https://github.com/BookOfOrigin/Ori"
