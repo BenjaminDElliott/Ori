@@ -1,5 +1,5 @@
 {
-	"name" : "BookOfOrigin/Ori",
+	"name" : "book-of-origin/ori",
 	"repositories": [{
 			"type": "vcs",
 			"url": "https://github.com/BookOfOrigin/Ori"
