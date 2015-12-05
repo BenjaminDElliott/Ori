@@ -33,7 +33,17 @@ class Router extends \Origin\Utilities\Types\Singleton {
       return $this->PathFinder($this->routes->offsetGet($route));
     }
     
-    
+    // Regex match. I'm sure someone who's brighter than I am has a better solution for this in 30 lines or less.
+		foreach($this->routes as $pattern => $path){
+			if(@preg_match($this->RegexifyPattern($pattern), null) !== false){
+				if(preg_match($this->RegexifyPattern($pattern), $route, $variables) > 0) {
+					array_shift($variables);
+					return $this->PathFinder($path, $variables);
+				}
+			}
+		}
+		
+		return $this->Route('404');
   }
   
   /*
@@ -45,8 +55,8 @@ class Router extends \Origin\Utilities\Types\Singleton {
   public function __construct(){
     $this->routes = Settings::Get('routes')->Values(['routes']);
     $this->max_route_attempts = Settings::Get()->Value(['origin', 'max_route_attempts']);
-    
-    if(!$this->routes->offsetExists('*')){
+		
+		if(!$this->routes->offsetExists('*')){
       throw new Exception('You must specify a default route in your routes file.');
     }
     
@@ -117,9 +127,16 @@ class Router extends \Origin\Utilities\Types\Singleton {
   private function AllowAttempt(){
     $this->attempts++;
     if($this->attempts > $this->max_route_attempts){
-      throw new Exception('Routing has tried multiple times to find the correct path, but has failed. This likely means catastrophic misconfiguration.');
+      throw new Exception('Routing has tried multiple times to find the correct path, but has failed. This likely means your class does not exist or is not in the correct location/namespace.');
     }
     
     return true;
   }
+	
+	private static $find = array('/', '*');
+	private static $replace = array('\/', '\*');
+	private function RegexifyPattern($pattern){
+		// I'd like to say thanks to MarkDefiant for coming up with this... http://stackoverflow.com/questions/11722711/url-routing-regex-php
+		return "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($pattern)) . "$@D";
+	}
 }

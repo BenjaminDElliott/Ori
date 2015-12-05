@@ -1,0 +1,10 @@
+{
+	"name" : "BookOfOrigin/Ori",
+	"repositories": [{
+			"type": "vcs",
+			"url": "https://github.com/BookOfOrigin/Ori"
+	}],
+	"require": {
+		"smarty/smarty": "~3.1"
+	}
+}
