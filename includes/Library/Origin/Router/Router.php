@@ -71,7 +71,8 @@ class Router extends \Origin\Utilities\Types\Singleton {
   private function PathFinder($path, array $variables = array()){
     if($this->AllowAttempt()){
       if($this->GetFile($path)){
-        if(call_user_func_array(array($this->GetClass($path), $this->GetMethod($path)), $variables) === false){
+        $class = $this->GetClass($path);
+				if(call_user_func_array(array((new $class), $this->GetMethod($path)), $variables) === false){
           throw new Exception('File exists, but class is undefined for route: '.$this->GetClass($path).'->'.$this->GetMethod($path)); 
         }
         
