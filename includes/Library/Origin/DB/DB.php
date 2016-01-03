@@ -46,6 +46,52 @@ class DB extends \Origin\Utilities\Types\Singleton {
     }
 	}
 	
+		/*
+	* Inserts a record into the database.
+	*/
+	public function Insert($sql, array $parameters = null){
+		return $this->Execute($sql, $parameters);
+	}
+	
+	/*
+	* Updates a record in the database.
+	*/
+	public function Update($table, array $parameters, $where = null, array $where_parameters = null){
+		$set_sql = null;
+		$binds = array();
+		foreach($parameters as $key => $value){
+			$set_sql .= sprintf(self::$set_sql, $key, $key);
+			$binds[':'.$key] = $value;
+		}
+		
+		$query = sprintf(self::$update_template, $table, $set_sql);
+		if($where !== null){
+			$query .= sprintf(self::$update_where, $where);
+			
+			if($where_parameters !== null){
+				$binds = array_merge($binds, $where_parameters);
+			}
+		}
+		
+		return $this->Execute($query, $binds);
+	}
+	
+	private static $update_template = <<<'SQL'
+UPDATE
+	%s
+SET
+	%s
+SQL;
+	
+	private static $update_where = <<<'SQL'
+ WHERE
+	%s
+SQL;
+	
+	private static $set_sql = <<<'SQL'
+ %s = :%s
+SQL;
+	
   private $connection_parameters;
   public function __construct($database_name = null){
     if($database_name === null){
