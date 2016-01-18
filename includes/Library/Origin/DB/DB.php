@@ -7,7 +7,7 @@ use \Origin\Utilities\Settings;
 use \Origin\Utilities\Types\Exception;
 
 /*
-* Example Call: DB::Get('test')->Query($query, array('param' => ':param'))
+* Example Call: DB::Get('connection_name_from_config')->Query($query, array('param' => ':param'));
 */
 class DB extends \Origin\Utilities\Types\Singleton {
 	private $error;
