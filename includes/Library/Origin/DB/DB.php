@@ -18,18 +18,18 @@ class DB extends \Origin\Utilities\Types\Singleton {
 	/*
 	* Select back full result set as an array.
 	*/
-	public function Query($sql, array $parameters = null){
+	public function Query($sql, array $parameters = null, $fetch_type = null){
 		if($this->Execute($sql, $parameters)){
-			return $this->statement->fetchAll(PDO::FETCH_ASSOC);
+			return $this->statement->fetchAll(($fetch_type === null) ? PDO::FETCH_ASSOC : $fetch);
 		}
 	}
 
 	/*
 	* Select just the first row.
 	*/
-	public function QueryFirstRow($sql, array $parameters = null){
+	public function QueryFirstRow($sql, array $parameters = null, $fetch_type = null){
 		if($this->Execute($sql, $parameters)){
-			return $this->statement->fetch(PDO::FETCH_ASSOC);
+			return $this->statement->fetch(($fetch_type === null) ? PDO::FETCH_ASSOC : $fetch_type);
 		}
 	}
 
@@ -96,7 +96,7 @@ class DB extends \Origin\Utilities\Types\Singleton {
 				$binds = array_merge($binds, $where_parameters);
 			}
 		}
-		//die(print_r(array('query' => $query, 'binds' => $binds), true));
+		
 		return $this->Execute($query, $binds);
 	}
 
