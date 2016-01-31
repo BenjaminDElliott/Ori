@@ -54,22 +54,41 @@ class DB extends \Origin\Utilities\Types\Singleton {
 	/*
 	* Inserts a record into the database.
 	*/
-	public function Insert($sql, array $parameters = null){
-		return $this->Execute($sql, $parameters);
+	public function Insert($table, array $parameters = null){
+		$binds = array();
+		$total_parameters = 1;
+		foreach($parameters as $key => $value){
+			if($value instanceof \DateTime){
+				$value = $value->format('Y-m-d H:i:s');
+			}
+
+			$binds[sprintf(':parameter1%04d', $total_parameters)] = $value;
+			$total_parameters++;
+		}
+		
+		$query = sprintf(self::$insert_template, $table, implode(', ', array_keys($parameters)), implode(', ', array_keys($binds)));
+		return $this->Execute($query, $binds);
+	}
+	
+	public function LastID(){
+		return $this->connection->lastInsertId();
 	}
 
 	/*
 	* Updates a record in the database.
 	*/
 	public function Update($table, array $parameters, $where = null, array $where_parameters = null){
-		$set_sql = null;
+		$sql = null;
 		$binds = array();
+		$total_parameters = 1;
 		foreach($parameters as $key => $value){
-			$set_sql .= sprintf(self::$set_sql, $key, $key);
-			$binds[':'.$key] = $value;
+			$bind_key = sprintf(':parameter1%04d', $total_parameters);
+			$sql .= (($sql === null) ? sprintf(self::$set_sql, $key, $bind_key) : ', '.sprintf(self::$set_sql, $key, $bind_key));
+			$binds[$bind_key] = $value;
+			$total_parameters++;
 		}
 		
-		$query = sprintf(self::$update_template, $table, $set_sql);
+		$query = sprintf(self::$update_template, $table, $sql);
 		if($where !== null){
 			$query .= sprintf(self::$update_where, $where);
 			
@@ -77,7 +96,7 @@ class DB extends \Origin\Utilities\Types\Singleton {
 				$binds = array_merge($binds, $where_parameters);
 			}
 		}
-		
+		//die(print_r(array('query' => $query, 'binds' => $binds), true));
 		return $this->Execute($query, $binds);
 	}
 
@@ -105,12 +124,12 @@ class DB extends \Origin\Utilities\Types\Singleton {
 			$this->connection_parameters->offsetGet('username'),
 			$this->connection_parameters->offsetGet('port')
 		);
-
+		
 		$options = array(
 			PDO::ATTR_PERSISTENT => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 		);
-
+		
 		try {
 			$this->connection = new PDO($dsn, $this->connection_parameters->offsetGet('username'), $this->connection_parameters->offsetGet('password'), $options);
 			return true;
@@ -165,6 +184,14 @@ UPDATE
 SET
 	%s
 SQL;
+	
+	private static $insert_template = <<<'SQL'
+INSERT INTO %s (
+	%s
+) VALUES (
+	%s
+)
+SQL;
 
 	private static $update_where = <<<'SQL'
  WHERE
@@ -172,6 +199,6 @@ SQL;
 SQL;
 
 	private static $set_sql = <<<'SQL'
- %s = :%s
+ %s = %s
 SQL;
 }
