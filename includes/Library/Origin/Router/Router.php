@@ -139,7 +139,6 @@ class Router extends \Origin\Utilities\Types\Singleton {
 	private static $find = array('/', '*');
 	private static $replace = array('\/', '\*');
 	private function RegexifyPattern($pattern){
-		// I'd like to say thanks to MarkDefiant for coming up with this... http://stackoverflow.com/questions/11722711/url-routing-regex-php
 		return "@^" . preg_replace('/\\\:[a-zA-Z0-9.\_\-]+/', '([a-zA-Z0-9.\-\_]+)', preg_quote($pattern)) . "$@D";
 	}
 }
