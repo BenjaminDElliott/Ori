@@ -1,6 +1,7 @@
 <?php
 namespace Origin\Router;
 
+use \Origin\Utilities\Layout;
 use \Origin\Utilities\Settings;
 use \Origin\Utilities\Types\Exception;
 
@@ -30,7 +31,7 @@ class Router extends \Origin\Utilities\Types\Singleton {
     
     // Exact match.
     if($this->routes->offsetExists($route)){
-      return $this->PathFinder($this->routes->offsetGet($route));
+      return $this->PathFinder($this->routes->offsetGet($route), $route);
     }
     
     // Regex match. I'm sure someone who's brighter than I am has a better solution for this in 30 lines or less.
@@ -38,7 +39,7 @@ class Router extends \Origin\Utilities\Types\Singleton {
 			if(@preg_match($this->RegexifyPattern($pattern), null) !== false){
 				if(preg_match($this->RegexifyPattern($pattern), $route, $variables) > 0) {
 					array_shift($variables);
-					return $this->PathFinder($path, $variables);
+					return $this->PathFinder($path, $pattern, $variables);
 				}
 			}
 		}
@@ -68,10 +69,11 @@ class Router extends \Origin\Utilities\Types\Singleton {
   /*
   * At this point we know the route we're going to use. Now to break it apart and call it.
   */
-  private function PathFinder($path, array $variables = array()){
+  private function PathFinder($path, $route, array $variables = array()){
     if($this->AllowAttempt()){
       if($this->GetFile($path)){
         $class = $this->GetClass($path);
+				Layout::Get()->Assign('route', $route);
 				if(call_user_func_array(array((new $class), $this->GetMethod($path)), $variables) === false){
           throw new Exception('File exists, but class is undefined for route: '.$this->GetClass($path).'->'.$this->GetMethod($path)); 
         }
@@ -138,6 +140,6 @@ class Router extends \Origin\Utilities\Types\Singleton {
 	private static $replace = array('\/', '\*');
 	private function RegexifyPattern($pattern){
 		// I'd like to say thanks to MarkDefiant for coming up with this... http://stackoverflow.com/questions/11722711/url-routing-regex-php
-		return "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($pattern)) . "$@D";
+		return "@^" . preg_replace('/\\\:[a-zA-Z0-9.\_\-]+/', '([a-zA-Z0-9.\-\_]+)', preg_quote($pattern)) . "$@D";
 	}
 }
