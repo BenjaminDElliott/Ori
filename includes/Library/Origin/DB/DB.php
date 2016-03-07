@@ -82,6 +82,10 @@ class DB extends \Origin\Utilities\Types\Singleton {
 		$binds = array();
 		$total_parameters = 1;
 		foreach($parameters as $key => $value){
+			if($value instanceof \DateTime){
+				$value = $value->format('Y-m-d H:i:s');
+			}
+			
 			$bind_key = sprintf(':parameter1%04d', $total_parameters);
 			$sql .= (($sql === null) ? sprintf(self::$set_sql, $key, $bind_key) : ', '.sprintf(self::$set_sql, $key, $bind_key));
 			$binds[$bind_key] = $value;
@@ -121,7 +125,7 @@ class DB extends \Origin\Utilities\Types\Singleton {
 		$dsn = sprintf('%s:host=%s;dbname=%s;port=%s',
 			$this->connection_parameters->offsetGet('type'),
 			$this->connection_parameters->offsetGet('hostname'),
-			$this->connection_parameters->offsetGet('username'),
+			$this->connection_parameters->offsetGet('database'),
 			$this->connection_parameters->offsetGet('port')
 		);
 		
